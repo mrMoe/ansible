@@ -13,7 +13,6 @@ Remark: Work in progress
 
 ## TODO
 
-- nginx redirect
 - sftp access
 - spamschutz
 - roundcube
