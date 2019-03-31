@@ -1,4 +1,7 @@
 ---
+
+# mariadb
+
 - mysql_db: name={{db_name}} state=present
   when: db_name is defined
   tags: db
@@ -6,6 +9,8 @@
 - mysql_user: name={{db_name}} password={{db_pass}} priv='{{db_name}}.*:ALL' state=present
   when: db_name is defined
   tags: db
+
+# nginx
 
 - template: src=templates/nginx.conf.j2 dest=/etc/nginx/sites-available/{{domain}}
   notify: restart nginx
@@ -18,6 +23,10 @@
 - file: path=/var/www/{{domain}}/html owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
   tags: web
 
+# postifix mailing
+
+## alias domains
+
 - lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="{{domain}} enabled" state="{{'present' if not mailbox else 'absent'}}"
   notify: restart postfix
   tags: mail
@@ -29,6 +38,8 @@
   notify: restart postfix
   tags: mail
 
+## mailbox domains
+
 - file: path=/var/vmail/auth.d/{{domain}} owner=doveauth group=doveauth mode=u=rX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
   when: mailbox is defined
   tags: mail
@@ -39,3 +50,11 @@
   when: mailbox is defined
   tags: mail
 
+### autoconfig
+
+- file: path=//var/www/{{domain}}/html/.well-known/autoconfig/mail state=directory recurse=yes
+  when: mailbox is defined and mailbox
+  tags: mail
+- template: src=templates/mail.autoconfig.xml.j2 dest=/var/www/{{domain}}/html/.well-known/autoconfig/mail/config-v1.1.xml
+  when: mailbox is defined and mailbox
+  tags: mail

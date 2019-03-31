@@ -1,5 +1,7 @@
 # Ansible for hetzner cx* server
 
+based on Debian9, postfix, dovecot, nginx, mariadb
+
 copied from all over the internetz. Especially
 
 - https://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
@@ -16,7 +18,8 @@ Remark: Work in progress
 - spamschutz
 - roundcube
 - postfix spf
-- ssl
+- sslo override defaults, such as individual quotas or mailbox formats.
+Th
   - sudo apt-get install certbot python-certbot-nginx
   - certbot certonly --standalone -d mail.mydomain.com
   - https://scaron.info/blog/debian-mail-postfix-dovecot.html
@@ -36,8 +39,8 @@ The auth service is configured to run in the doveauth user context. Therefore th
 ### /var/vmail/auth.d/<domain>/passwd
 
     <user>@<domain>:{SSHA}xxxx:5000:5000::/var/vmail/<domain>/<user>::userdb_quota_rule=*:storage=5G userdb_acl_groups=PublicMailboxAdmins
-    doveadm auth test test@synworks.org
     doveadm pw -s ssha256
+    doveadm auth test test@synworks.org
 
 ## nginx
 

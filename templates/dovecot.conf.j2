@@ -80,7 +80,7 @@ plugin {
     acl = vfile:/var/vmail/mails/%d/acls:cache_secs=300
 
     quota = dict:user::file:%h/maildir/dovecot-quota
-    quota_rule = *:storage=500MB
+    quota_rule = *:storage=100MB
     quota_rule2 = Trash:storage=+10%%
 
     sieve = ~/.dovecot.sieve
