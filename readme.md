@@ -9,6 +9,22 @@ copied from all over the internetz. Especially
 
 Remark: Work in progress
 
+## TODO
+
+- nginx redirect
+- sftp access
+- spamschutz
+- roundcube
+- postfix spf
+- ssl
+  - sudo apt-get install certbot python-certbot-nginx
+  - certbot certonly --standalone -d mail.mydomain.com
+  - https://scaron.info/blog/debian-mail-postfix-dovecot.html
+  - dovecut ssl
+  - postfix ssl
+- firewall
+- vault
+
 ## dovecot
 
 A private namespace configured for maildir storage to hold the mailboxes and a public namespace configured for maildir storage with filesystem layout (/dir/subdir) and per user index-information. The index will be stored in the public dir under the home directories. This allows individual /SEEN information for the public namespace.
@@ -26,3 +42,7 @@ The auth service is configured to run in the doveauth user context. Therefore th
 ## postfix
 
 ## sftp
+
+## fail2ban
+
+Fail2ban is activated for the ssh port in default configuration
