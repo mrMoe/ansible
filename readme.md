@@ -65,7 +65,7 @@ The auth service is configured to run in the doveauth user context. Therefore th
 
 ### mail migration
 
-    larch -a -d -f imap://mail.source.com -u sourceUser -p sourcePass -t imap://localhost -U localUser -P localPass
+    larch -a -d -x -f imap://mail.source.com -u sourceUser -p sourcePass -t imap://localhost -U localUser -P localPass
 
 ## nginx
 
