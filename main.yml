@@ -1,0 +1,28 @@
+---
+- hosts: all
+  tasks:
+  - debug: msg="System {{ inventory_hostname }} with fqdn {{ ansible_fqdn}} has uuid {{ ansible_product_uuid }}"
+  - authorized_key: user=root state=present key="{{ lookup('file', '/home/moe/.ssh/ed25519.pub') }}"
+  - apt: upgrade=dist update_cache=yes autoclean=yes autoremove=yes
+  - apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban
+
+# nginx redirect
+# sftp access
+# spamschutz
+# roundcube
+# postfix spf
+# ssl
+## sudo apt-get install certbot python-certbot-nginx
+## certbot certonly --standalone -d mail.mydomain.com
+## https://scaron.info/blog/debian-mail-postfix-dovecot.html
+## dovecut ssl
+## postfix ssl
+# firewall
+# vault
+
+- import_playbook: webservers.yml
+- import_playbook: databases.yml
+- import_playbook: mailservers.yml
+- import_playbook: reichstein.yml
+- import_playbook: denk.yml
+

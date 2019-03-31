@@ -1,0 +1,26 @@
+---
+- hosts: mailservers
+  tags: mail
+  handlers:
+  - import_tasks: handlers/handlers.yml
+  tasks:
+  - apt: state=latest name=postfix,dovecot-imapd,dovecot-lmtpd,dovecot-sieve,dovecot-managesieved
+
+  - openssl_dhparam: path=/etc/ssl/dhparams.pem size=4096
+    notify: ["restart dovecot"]
+
+  - template: src=templates/main.cf.j2 dest=/etc/postfix/main.cf
+    notify: restart postfix
+  - file: path=/etc/postfix/virtual state=absent
+  - file: path=/etc/postfix/virtual_mailbox_maps state=absent
+  - file: path=/etc/postfix/virtual_mailbox_domains state=touch
+
+  - template: src=templates/dovecot.conf.j2 dest=/etc/dovecot/dovecot.conf
+    notify: restart dovecot
+  - user: name=vmail    password=! shell=/bin/false home=/nonexistent create_home=false
+  - user: name=doveauth password=! shell=/bin/false home=/nonexistent create_home=false
+  - file: path=/var/vmail/          state=directory owner=root      group=root      mode=u=rX,g=rX,o=rX
+  - file: path=/var/vmail/auth.d    state=directory owner=doveauth  group=dovecot   mode=u=rX,g=,o=
+  - file: path=/var/vmail/mails     state=directory owner=vmail     group=dovecot   mode=u=rwX,g=,o=
+  - file: path=/var/vmail/public    state=directory owner=vmail     group=dovecot   mode=u=rwX,g=,o=
+

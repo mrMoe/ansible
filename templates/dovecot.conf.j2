@@ -1,0 +1,137 @@
+# A private namespace configured for maildir storage to hold the mailboxes and a public namespace configured for maildir storage with filesystem layout (/dir/subdir) and per user index-information. The index will be stored in the public dir under the home directories. This allows individual /SEEN information for the public namespace.
+# Per domain flat-files containing the virtual user's specific parameters, stored in a single passwd-like file. User logins are expected to be in full-qualified e-mail address format: user@domain.tld . Additional parameters may be used to override defaults, such as individual quotas or mailbox formats.
+# The auth service is configured to run in the doveauth user context. Therefore the directory auth.d/ and its content will be owned by this user, while mails / ACLs / Sieve-Scripts, will be accessed using the vmail context specified in the passwd-file. To keep directory permissions simple these will be stored seperately under the mails/ tree.
+
+# https://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
+# https://thomas-leister.de/mailserver-debian-stretch/
+# https://wiki.dovecot.org/SSL/DovecotConfiguration
+
+# /var/vmail/auth.d/<domain>/passwd
+# <user>@<domain>:{SSHA}xxxx:5000:5000::/var/vmail/<domain>/<user>::userdb_quota_rule=*:storage=5G userdb_acl_groups=PublicMailboxAdmins
+# doveadm auth test test@synworks.org
+# doveadm pw -s ssha256
+# openssl s_client -starttls imap -ssl3 -connect imap.example.com:143
+
+#ssl_dh = /etc/ssl/dhparams.pem # Dovecot > 2.3
+auth_mechanisms = plain login
+auth_verbose = yes
+disable_plaintext_auth = yes
+mail_debug = no
+mail_location = maildir:~/maildir
+mail_plugins = acl quota
+protocols = imap lmtp sieve
+ssl = required
+ssl_cert = </etc/ssl/certs/ssl-cert-snakeoil.pem
+ssl_cipher_list = AES128+EECDH:AES128+EDH
+ssl_dh_parameters_length = 4096
+ssl_key = </etc/ssl/private/ssl-cert-snakeoil.key
+ssl_prefer_server_ciphers = yes
+ssl_protocols = !SSLv3
+verbose_proctitle = yes
+
+passdb {
+    driver = passwd-file
+    args = username_format=%u /var/vmail/auth.d/%d/passwd
+}
+
+userdb {
+    #driver = passwd-file
+    #args = username_format=%u /var/vmail/auth.d/%d/passwd
+    
+    # skip uid,gid and home setting in passwd file
+    driver = static
+    args = uid=vmail gid=vmail home=/var/vmail/mails/%d/users/%n
+}
+
+service imap-login {
+    inet_listener imap {
+        port = 143
+    }
+    inet_listener imaps {
+        port = 0
+    }
+}
+
+service auth {
+    user = doveauth
+    unix_listener /var/spool/postfix/private/auth {
+        group = postfix
+        mode = 0660
+        user = postfix
+    }
+}
+
+service auth-worker {
+    user = doveauth
+}
+
+service lmtp {
+    unix_listener /var/spool/postfix/private/dovecot-lmtp {
+        group = postfix
+        mode = 0660
+        user = postfix
+    }
+}
+
+service managesieve-login {
+    inet_listener sieve {
+        port = 4190
+    }
+}
+
+protocol imap {
+    mail_plugins = $mail_plugins imap_acl imap_quota imap_sieve mail_log notify
+    mail_max_userip_connections = 20
+    imap_idle_notify_interval = 29 mins
+}
+
+protocol lmtp {
+    mail_plugins = $mail_plugins sieve
+    #postmaster_address = postmaster@domainname
+}
+
+plugin {
+    acl = vfile:/var/vmail/mails/%d/acls:cache_secs=300
+
+    quota = dict:user::file:%h/maildir/dovecot-quota
+    quota_rule = *:storage=500MB
+    quota_rule2 = Trash:storage=+10%%
+
+    sieve = ~/.dovecot.sieve
+    sieve_dir = ~/sieve
+    sieve_global_dir = /var/vmail/mails/%d/sieve
+}
+
+namespace {
+    hidden = no
+    inbox = yes
+    prefix =
+    separator = /
+    type = private
+    
+    #mailbox Spam {
+    #    auto = subscribe
+    #    special_use = \Junk
+    #}
+    mailbox Trash {
+        auto = subscribe
+        special_use = \Trash
+    }
+    mailbox Drafts {
+        auto = subscribe
+        special_use = \Drafts
+    }
+    mailbox Sent {
+        auto = subscribe
+        special_use = \Sent
+    }
+}
+
+namespace {
+    list = yes
+    location = maildir:/var/vmail/public:LAYOUT=fs:INDEX=~/public
+    prefix = Public/
+    separator = /
+    subscriptions = no
+    type = public
+}
