@@ -4,7 +4,7 @@ auth_verbose = yes
 disable_plaintext_auth = yes
 mail_debug = no
 mail_location = maildir:~/maildir
-mail_plugins = acl quota
+mail_plugins = zlib acl quota
 protocols = imap lmtp sieve
 ssl = required
 ssl_cert = </etc/ssl/certs/ssl-cert-snakeoil.pem
@@ -73,7 +73,6 @@ protocol imap {
 
 protocol lmtp {
     mail_plugins = $mail_plugins sieve
-    #postmaster_address = postmaster@domainname
 }
 
 plugin {
@@ -93,6 +92,7 @@ namespace {
     inbox = yes
     prefix =
     separator = /
+    subscriptions = yes
     type = private
     
     #mailbox Spam {

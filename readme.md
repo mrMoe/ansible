@@ -2,7 +2,7 @@
 
 based on Debian9, postfix, dovecot, nginx, mariadb
 
-copied from all over the internetz. Especially
+wildly copied from all over the internetz. Especially
 
 - https://wiki2.dovecot.org/HowTo/VirtualUserFlatFilesPostfix
 - https://thomas-leister.de/mailserver-debian-stretch/
@@ -18,8 +18,7 @@ Remark: Work in progress
 - spamschutz
 - roundcube
 - postfix spf
-- sslo override defaults, such as individual quotas or mailbox formats.
-Th
+- ssl
   - sudo apt-get install certbot python-certbot-nginx
   - certbot certonly --standalone -d mail.mydomain.com
   - https://scaron.info/blog/debian-mail-postfix-dovecot.html
@@ -34,7 +33,16 @@ A private namespace configured for maildir storage to hold the mailboxes and a p
 Per domain flat-files containing the virtual user's specific parameters, stored in a single passwd-like file. User logins are expected to be in full-qualified e-mail address format: user@domain.tld . Additional parameters may be used to override defaults, such as individual quotas or mailbox formats.
 The auth service is configured to run in the doveauth user context. Therefore the directory auth.d/ and its content will be owned by this user, while mails / ACLs / Sieve-Scripts, will be accessed using the vmail context specified in the passwd-file. To keep directory permissions simple these will be stored seperately under the mails/ tree.
 
-    openssl s_client -starttls imap -ssl3 -connect imap.example.com:143
+    openssl s_client -starttls imap -connect localhost:143
+    CAPABILITY
+    1 LOGIN user@example.com PASS
+    2 LIST [flags] [folder separator] [search term]
+    3 STATUS [mailbox] [flags]
+    4 SELECT [mailbox]
+    5 FETCH [first]:[last] flags
+    6 FETCH [mail number] body[header]
+    7 FETCH [mail number] body[text]
+    9 LOGOUT
 
 ### /var/vmail/auth.d/<domain>/passwd
 
