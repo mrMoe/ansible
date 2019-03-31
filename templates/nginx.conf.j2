@@ -1,3 +1,19 @@
+{% if redirect_domain is defined and redirect_domain|length %}
+
+server {
+    listen 80;
+    server_name {{domain}} *.{{domain}};
+    return 301 $scheme://{{redirect_domain}}$request_uri;
+}
+
+{% else %}
+
+#server {
+#    listen 80;
+#    server_name {{domain}} *.{{domain}};
+#    return 301 https://www.{{domain}}$request_uri;
+#}
+
 server {
     listen 80;
     listen [::]:80;
@@ -50,11 +66,10 @@ server {
     # add_header X-Content-Type-Options nosniff;
     # add_header X-XSS-Protection "1; mode=block";
 
-    root /var/www/{{domain}}/html;
-
-    index index.html index.php;
-
     server_name {{domain}} *.{{domain}};
+
+    root /var/www/{{domain}}/html;
+    index index.html index.php;
 
     location = /favicon.ico {
         log_not_found off;
@@ -102,3 +117,5 @@ server {
     }
     # https://codex.wordpress.org/Nginx
 }
+
+{% endif %}
