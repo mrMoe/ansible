@@ -21,6 +21,17 @@
   tags: web
 
 - file: path=/var/www/{{domain}}/html owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
+  when: redirect_domain is undefined or not redirect_domain
+  tags: web
+- shell: rm -rf /var/www/{{domain}}_forwarded_to_* warn=false
+  when: redirect_domain is undefined or not redirect_domain
+  tags: web
+
+- file: path=/var/www/{{domain}} state=absent
+  when: redirect_domain is defined and redirect_domain
+  tags: web
+- copy: dest=/var/www/{{domain}}_forwarded_to_{{redirect_domain}} content="-"
+  when: redirect_domain is defined and redirect_domain
   tags: web
 
 # postifix mailing
