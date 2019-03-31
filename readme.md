@@ -11,6 +11,17 @@ wildly copied from all over the internetz. Especially
 
 Remark: Work in progress
 
+## import_tasks: virtual-domain.yml switches
+
+|                 |                                                                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| db_name         | if db_name is given a database scheme with the given name is created in the mariadb server                                                   |
+| db_pass         | if db_name is given a user named after the db_name variable and the given db_pass is created with full access to the formerly created scheme |
+| domain          | domain for which a virtual_host configration should be generated                                                                             |
+| mail_forward    | all mails for an alias (not mailbox) domain are forwarded to the single given mail addresss                                                  |
+| mailbox         | instead of creating a alias postfix configation a mailbox with a imap server config is created                                               |
+| redirect_domain | creates a http redirect nginx configuration with a permanent redirect to the given domain                                                    |
+
 ## TODO
 
 - sftp access
