@@ -1,0 +1,16 @@
+AcceptEnv LANG LC_*
+ChallengeResponseAuthentication no
+PermitRootLogin yes
+PrintMotd no 
+Subsystem sftp internal-sftp
+UsePAM yes
+X11Forwarding yes
+Match Group sftponly
+    #PasswordAuthentication no
+    AllowAgentForwarding no
+    AllowTcpForwarding no
+    ChrootDirectory %h
+    ForceCommand internal-sftp
+    PermitTunnel no
+    X11Forwarding no
+    PermitTTY no

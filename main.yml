@@ -4,7 +4,11 @@
   - debug: msg="System {{ inventory_hostname }} with fqdn {{ ansible_fqdn}} has uuid {{ ansible_product_uuid }}"
   - authorized_key: user=root state=present key="{{ lookup('file', '/home/moe/.ssh/ed25519.pub') }}"
   - apt: upgrade=dist update_cache=yes autoclean=yes autoremove=yes
-  - apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban
+  - apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban,acl
+
+  - template: src=templates/sshd_config.conf.j2 dest=/etc/ssh/sshd_config
+    notify: restart ssh
+  - group: name=sftponly
 
 - import_playbook: webservers.yml
 - import_playbook: databases.yml

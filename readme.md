@@ -24,7 +24,6 @@ Remark: Work in progress
 
 ## TODO
 
-- sftp access
 - spamschutz
 - roundcube
 - postfix spf
@@ -36,6 +35,10 @@ Remark: Work in progress
   - postfix ssl
 - firewall
 - vault
+
+## SFTP
+
+    ansible all -i localhost, -m debug -a "msg={{ 'mypassword' | password_hash('sha512', 'mysecretsalt') }}"
 
 ## dovecot
 
@@ -57,8 +60,12 @@ The auth service is configured to run in the doveauth user context. Therefore th
 ### /var/vmail/auth.d/<domain>/passwd
 
     <user>@<domain>:{SSHA}xxxx:5000:5000::/var/vmail/<domain>/<user>::userdb_quota_rule=*:storage=5G userdb_acl_groups=PublicMailboxAdmins
-    doveadm pw -s ssha256
+    doveadm pw -s ssha256 -p testpass
     doveadm auth test test@synworks.org
+
+### mail migration
+
+    larch -a -d -f imap://mail.source.com -u sourceUser -p sourcePass -t imap://localhost -U localUser -P localPass
 
 ## nginx
 
