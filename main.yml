@@ -12,6 +12,28 @@
     notify: restart ssh
   - group: name=sftponly
 
+  - name: block ssh script kiddies
+    blockinfile:
+      path: /etc/hosts.deny
+      block: |
+        ALL: 103.27.237.67
+        ALL: 111.47.17.224
+        ALL: 121.183.203.60
+        ALL: 134.175.49.215
+        ALL: 137.74.176.208
+        ALL: 144.217.241.40
+        ALL: 190.0.22.66
+        ALL: 200.32.12.83
+        ALL: 201.244.94.189
+        ALL: 206.189.65.11
+        ALL: 222.174.55.2
+        ALL: 36.67.120.234
+        ALL: 54.38.175.113
+        ALL: 58.242.83.18
+        ALL: 58.242.83.37
+        ALL: 59.45.97.190
+        ALL: 98.234.14.119
+
 - import_playbook: webservers.yml
 - import_playbook: databases.yml
 - import_playbook: mailservers.yml
