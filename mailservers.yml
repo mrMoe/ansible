@@ -11,16 +11,22 @@
 
   - template: src=templates/main.cf.j2 dest=/etc/postfix/main.cf
     notify: restart postfix
+    tags: smtp
   - lineinfile: path=/etc/postfix/check_client_access create=yes line="# check_client_access"
     notify: restart postfix
+    tags: smtp
   - lineinfile: path=/etc/postfix/check_helo_access create=yes line="# check_helo_access"
     notify: restart postfix
+    tags: smtp
   - lineinfile: path=/etc/postfix/check_recipient_access create=yes line="# check_recipient_access"
     notify: restart postfix
+    tags: smtp
   - lineinfile: path=/etc/postfix/check_sender_access create=yes line="# check_sender_access"
     notify: restart postfix
+    tags: smtp
   - lineinfile: path=/etc/postfix/virtual_mailbox_domains create=yes line="# virtual_mailbox_domains"
     notify: restart postfix
+    tags: smtp
 
   - template: src=templates/dovecot.conf.j2 dest=/etc/dovecot/dovecot.conf
     notify: restart dovecot
