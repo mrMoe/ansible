@@ -48,13 +48,13 @@ virtual_transport = lmtp:unix:private/dovecot-lmtp
 smtpd_recipient_restrictions =
 
 # Postmaster, abuse und andere Role-Accounts whitelisten
-#    check_recipient_access btree:/etc/postfix/access_recipient-rfc,
+#    check_recipient_access texthash:/etc/postfix/access_recipient-rfc,
 
 # White- und Blacklisting
-#    check_client_access btree:/etc/postfix/access_client,
-#    check_helo_access btree:/etc/postfix/access_helo,
-#    check_recipient_access btree:/etc/postfix/access_recipient,
-#    check_sender_access btree:/etc/postfix/access_sender,
+    check_client_access texthash:/etc/postfix/check_client_access,
+    check_helo_access texthash:/etc/postfix/check_helo_access,
+    check_recipient_access texthash:/etc/postfix/check_recipient_access,
+    check_sender_access texthash:/etc/postfix/check_recipient_access,
 
 # Keine unsauberen Mails annehmen
     reject_invalid_hostname,
@@ -70,7 +70,7 @@ smtpd_recipient_restrictions =
 
 # RBL checken
     reject_rbl_client bl.spamcop.net,
-#    reject_rbl_client dnsbl.njabl.org,
+    reject_rbl_client dnsbl.njabl.org,
 #    reject_rbl_client ix.dnsbl.manitu.net,
 #    reject_rbl_client list.dsbl.org,
 #    reject_rbl_client zen.spamhaus.org,
