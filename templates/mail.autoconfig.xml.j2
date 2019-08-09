@@ -8,7 +8,7 @@
     <displayShortName>{{ virtual_domain }}</displayShortName>
     
     <incomingServer type="imap">
-      <hostname>{{ mydomain }}</hostname>
+      <hostname>{{ ansible_domain }}</hostname>
       <port>143</port>
       <socketType>STARTTLS</socketType>
       <authentication>password-cleartext</authentication>
@@ -16,7 +16,7 @@
     </incomingServer>
     
     <outgoingServer type="smtp">
-      <hostname>{{ mydomain }}</hostname>
+      <hostname>{{ ansible_domain }}</hostname>
       <port>25</port>
       <socketType>STARTTLS</socketType>
       <authentication>password-cleartext</authentication>

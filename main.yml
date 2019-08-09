@@ -1,6 +1,10 @@
 ---
-- import_playbook: host-reichstein.yml
-- import_playbook: host-denk.yml
+- hosts: all
+  strategy: free
+
+  tasks:
+  - import_playbook: host-reichstein.yml
+  - import_playbook: host-denk.yml
 
 # - hosts: example.com
 #   handlers:

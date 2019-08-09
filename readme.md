@@ -19,8 +19,6 @@ Remark: Work in progress
 | db_pass         | if db_name is given a user named after the db_name variable and the given db_pass is created with full access to the formerly created scheme |
 | mail_forward    | all mails for an alias (not mailbox) domain are forwarded to the single given mail addresss                                                  |
 | mailbox         | instead of creating a alias postfix configation a mailbox with a imap server config is created                                               |
-| mydomain        | postfix domain origin                                                                                                                        |
-| myhostname      | postfix hostname identity                                                                                                                    |
 | redirect_domain | creates a http redirect nginx configuration with a permanent redirect to the given domain                                                    |
 | virtual_domain  | domain for which a virtual_host configration should be generated                                                                             |
 
@@ -33,7 +31,7 @@ Remark: Work in progress
 - postfix spf
 - ssl
   - sudo apt-get install certbot python-certbot-nginx
-  - certbot certonly --standalone -d mail.mydomain.com
+  - certbot certonly --standalone -d mail.ansible_domain.com
   - https://scaron.info/blog/debian-mail-postfix-dovecot.html
   - dovecut ssl
   - postfix ssl

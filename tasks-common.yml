@@ -1,5 +1,8 @@
 ---
-- debug: msg="System {{ inventory_hostname }} with fqdn {{ ansible_fqdn}} has uuid {{ ansible_product_uuid }}"
+- hostname: name={{ inventory_hostname_short }}
+- copy: dest=/etc/hostname content="{{ inventory_hostname_short }}"
+- lineinfile: path=/etc/hosts create=yes line="127.0.1.1 {{ inventory_hostname }} {{ inventory_hostname_short }}"
+
 - authorized_key: user=root state=present key="{{ lookup('file', '/home/moe/.ssh/ed25519.pub') }}"
 - apt: upgrade=dist update_cache=yes autoclean=yes autoremove=yes
 - apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban,acl
