@@ -1,0 +1,30 @@
+---
+- debug: msg="System {{ inventory_hostname }} with fqdn {{ ansible_fqdn}} has uuid {{ ansible_product_uuid }}"
+- authorized_key: user=root state=present key="{{ lookup('file', '/home/moe/.ssh/ed25519.pub') }}"
+- apt: upgrade=dist update_cache=yes autoclean=yes autoremove=yes
+- apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban,acl
+
+- template: src=templates/sshd_config.j2 dest=/etc/ssh/sshd_config
+  notify: restart ssh
+- group: name=sftponly
+
+- name: block ssh script kiddies
+  blockinfile:
+    path: /etc/hosts.deny
+    block: |
+      ALL: 103.27.237.67
+      ALL: 111.47.17.224
+      ALL: 121.183.203.60
+      ALL: 134.175.49.215
+      ALL: 137.74.176.208
+      ALL: 144.217.241.40
+      ALL: 190.0.22.66
+      ALL: 200.32.12.83
+      ALL: 201.244.94.189
+      ALL: 206.189.65.11
+      ALL: 222.174.55.2
+      ALL: 36.67.120.234
+      ALL: 58.242.0.0/15
+      ALL: 54.38.0.0/16
+      ALL: 59.44.0.0/14
+      ALL: 98.234.14.119
