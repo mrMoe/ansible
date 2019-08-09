@@ -1,0 +1,3 @@
+---
+- apt: state=latest name=mariadb-server,python-pymysql
+- file: path=/root/.my.cnf src=/etc/mysql/debian.cnf state=link

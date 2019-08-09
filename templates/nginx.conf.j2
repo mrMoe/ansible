@@ -2,7 +2,7 @@
 
 server {
     listen 80;
-    server_name {{domain}} *.{{domain}};
+    server_name {{virtual_domain}} *.{{virtual_domain}};
     return 301 $scheme://{{redirect_domain}}$request_uri;
 }
 
@@ -10,8 +10,8 @@ server {
 
 #server {
 #    listen 80;
-#    server_name {{domain}} *.{{domain}};
-#    return 301 https://www.{{domain}}$request_uri;
+#    server_name {{virtual_domain}} *.{{virtual_domain}};
+#    return 301 https://www.{{virtual_domain}}$request_uri;
 #}
 
 server {
@@ -66,9 +66,9 @@ server {
     # add_header X-Content-Type-Options nosniff;
     # add_header X-XSS-Protection "1; mode=block";
 
-    server_name {{domain}} *.{{domain}};
+    server_name {{virtual_domain}} *.{{virtual_domain}};
 
-    root /var/www/{{domain}}/html;
+    root /var/www/{{virtual_domain}}/html;
     index index.html index.php;
 
     location = /favicon.ico {

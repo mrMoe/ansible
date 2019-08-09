@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <clientConfig version="1.1">
-  <emailProvider id="{{ domain }}">
+  <emailProvider id="{{ virtual_domain }}">
     
-    <domain>{{ domain }}</domain>
-    <displayName>{{ domain }}</displayName>
-    <displayShortName>{{ domain }}</displayShortName>
+    <virtual_domain>{{ virtual_domain }}</virtual_domain>
+    <displayName>{{ virtual_domain }}</displayName>
+    <displayShortName>{{ virtual_domain }}</displayShortName>
     
     <incomingServer type="imap">
-      <hostname>static.50.132.203.116.clients.your-server.de</hostname>
+      <hostname>{{ mydomain }}</hostname>
       <port>143</port>
       <socketType>STARTTLS</socketType>
       <authentication>password-cleartext</authentication>
@@ -16,7 +16,7 @@
     </incomingServer>
     
     <outgoingServer type="smtp">
-      <hostname>static.50.132.203.116.clients.your-server.de</hostname>
+      <hostname>{{ mydomain }}</hostname>
       <port>25</port>
       <socketType>STARTTLS</socketType>
       <authentication>password-cleartext</authentication>

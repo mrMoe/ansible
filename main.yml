@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  strategy: free
   handlers:
   - import_tasks: handlers/handlers.yml
   tasks:
@@ -28,25 +29,20 @@
         ALL: 206.189.65.11
         ALL: 222.174.55.2
         ALL: 36.67.120.234
-        ALL: 54.38.175.113
-        ALL: 58.242.83.18
-        ALL: 58.242.83.37
-        ALL: 59.45.97.190
+        ALL: 58.242.0.0/15
+        ALL: 54.38.0.0/16
+        ALL: 59.44.0.0/14
         ALL: 98.234.14.119
 
-- import_playbook: webservers.yml
-- import_playbook: databases.yml
-- import_playbook: mailservers.yml
-
-- import_playbook: reichstein.yml
-- import_playbook: denk.yml
+# - import_playbook: host-reichstein.yml
+- import_playbook: host-denk.yml
 
 # - hosts: example.com
 #   handlers:
 #   - import_tasks: handlers/handlers.yml
 #   tasks:
-#   - { import_tasks: virtual-domain.yml, vars: [ domain: example.com,  db_name: example_com,  db_pass: ExamPlEDbPass1337!, mailbox: false, mail_forward: example.com+forward@gmail.com ]}
-#   - { import_tasks: virtual-domain.yml, vars: [ domain: example2.com, db_name: example2_com, db_pass: 1337ExamPlEDbPass!, mailbox: true ]}
+#   - { import_tasks: playbook-virtual-domain.yml, vars: [ virtual_domain: example.com,  db_name: example_com,  db_pass: ExamPlEDbPass1337!, mailbox: false, mail_forward: example.com+forward@gmail.com ]}
+#   - { import_tasks: playbook-virtual-domain.yml, vars: [ virtual_domain: example2.com, db_name: example2_com, db_pass: 1337ExamPlEDbPass!, mailbox: true ]}
 #   - copy: 
 #       dest: /var/vmail/auth.d/example2.com/passwd
 #       content: |

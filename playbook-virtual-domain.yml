@@ -1,0 +1,55 @@
+---
+
+# mariadb
+
+- mysql_db: name={{db_name}} state=present
+  when: db_name is defined
+
+- mysql_user: name={{db_name}} password={{db_pass}} priv='{{db_name}}.*:ALL' state=present
+  when: db_name is defined
+
+# nginx
+
+- template: src=templates/nginx.conf.j2 dest=/etc/nginx/sites-available/{{virtual_domain}}
+  notify: restart nginx
+
+- file: path=/etc/nginx/sites-enabled/{{virtual_domain}} src=/etc/nginx/sites-available/{{virtual_domain}} state=link
+  notify: restart nginx
+
+- file: path=/var/www/{{virtual_domain}}/html owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
+  when: redirect_domain is undefined or not redirect_domain
+- shell: rm -rf /var/www/{{virtual_domain}}_forwarded_to_* warn=false
+  when: redirect_domain is undefined or not redirect_domain
+
+- file: path=/var/www/{{virtual_domain}} state=absent
+  when: redirect_domain is defined and redirect_domain
+- copy: dest=/var/www/{{virtual_domain}}_forwarded_to_{{redirect_domain}} content="-"
+  when: redirect_domain is defined and redirect_domain
+
+# postifix mailing
+
+## alias domains
+
+- lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="{{virtual_domain}} enabled" state="{{'present' if not mailbox else 'absent'}}"
+  notify: restart postfix
+- lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="@{{virtual_domain}} {{mail_forward}}" state="{{'present' if not mailbox else 'absent'}}"
+  when: mail_forward is defined
+  notify: restart postfix
+- lineinfile: path=/etc/postfix/virtual_mailbox_domains create=yes line="{{virtual_domain}} enabled" state="{{'present' if mailbox else 'absent'}}"
+  notify: restart postfix
+
+## mailbox domains
+
+- file: path=/var/vmail/auth.d/{{virtual_domain}} owner=doveauth group=doveauth mode=u=rX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
+  when: mailbox is defined
+- file: path=/var/vmail/auth.d/{{virtual_domain}}/passwd state=touch owner=doveauth group=doveauth mode=u=rX,g=,o=
+  when: mailbox is defined and mailbox
+- file: path=/var/vmail/mails/{{virtual_domain}} owner=vmail group=vmail mode=u=rwX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
+  when: mailbox is defined
+
+### autoconfig
+
+- file: path=//var/www/{{virtual_domain}}/html/.well-known/autoconfig/mail state=directory recurse=yes
+  when: mailbox is defined and mailbox
+- template: src=templates/mail.autoconfig.xml.j2 dest=/var/www/{{virtual_domain}}/html/.well-known/autoconfig/mail/config-v1.1.xml
+  when: mailbox is defined and mailbox
