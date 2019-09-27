@@ -1,4 +1,5 @@
 ---
 - apt: state=latest name=nginx,php-fpm,php-gd,php-imap,php-json,php-mysql,php-zip,php-xml,php-readline,php-xmlrpc,php-mcrypt,php-imagick
+  notify: restart nginx
 - file: path=/etc/nginx/sites-enabled/default state=absent
   notify: restart nginx

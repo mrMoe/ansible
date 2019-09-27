@@ -2,7 +2,7 @@
 - apt: state=latest name=postfix,dovecot-imapd,dovecot-lmtpd,dovecot-sieve,dovecot-managesieved
 
 - openssl_dhparam: path=/etc/ssl/dhparams.pem size=4096
-  notify: ["restart dovecot"]
+  notify: restart dovecot
 
 # setup postfix
 
