@@ -1,16 +1,21 @@
 AcceptEnv LANG LC_*
 ChallengeResponseAuthentication no
-PermitRootLogin yes
-PrintMotd no 
+MaxAuthTries 1
+PasswordAuthentication yes
+PermitRootLogin prohibit-password
+Port 22
+PrintMotd no
+Protocol 2
+PubkeyAuthentication yes
+StrictModes yes
 Subsystem sftp internal-sftp
 UsePAM yes
 X11Forwarding yes
 Match Group sftponly
-    #PasswordAuthentication no
     AllowAgentForwarding no
     AllowTcpForwarding no
     ChrootDirectory %h
     ForceCommand internal-sftp
+    PermitTTY no
     PermitTunnel no
     X11Forwarding no
-    PermitTTY no

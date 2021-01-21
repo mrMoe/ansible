@@ -66,7 +66,7 @@ The auth service is configured to run in the doveauth user context. Therefore th
 
 ### /var/vmail/auth.d/<virtual_domain>/passwd
 
-    doveadm pw -s ssha256 -p testpass   # gemerate hashed password
+    doveadm pw -s ssha256 -p testpass   # generate hashed password
     <user>@<virtual_domain>:{SSHA}hashed-password:5000:5000::/var/vmail/<virtual_domain>/<user>::userdb_quota_rule=*:storage=5G userdb_acl_groups=PublicMailboxAdmins
     doveadm auth <user> <user>@<virtual_domain> # test authentication
 
@@ -87,3 +87,15 @@ Create password for SFTP user
 ## fail2ban
 
 Fail2ban is activated for the ssh port in default configuration
+
+## MQTT
+
+- <https://mosquitto.org/man/mosquitto-8.html>
+
+    mosquitto_sub -h localhost -v -t '#'
+    mosquitto_pub -h localhost -t test -m "foo"
+    mosquitto_sub -h localhost -t '$SYS/broker/clients/connected'
+
+## telegraf
+
+    docker run --rm telegraf telegraf config > telegraf.conf

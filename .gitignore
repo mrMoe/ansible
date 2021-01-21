@@ -1,3 +1,4 @@
 *.retry
 host-*
 hosts
+.vscode

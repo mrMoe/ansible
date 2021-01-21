@@ -1,55 +1,55 @@
 ---
+- debug: msg="Setting up virtual_domain {{virtual_domain}}"
 
-# mariadb
-
-- mysql_db: name={{db_name}} state=present
+- name: mariadb {{db_name}}
+  block:
+    - mysql_db: name={{db_name}} state=present
+    - mysql_user: name={{db_name}} password={{db_pass}} priv='{{db_name}}.*:ALL' state=present
+    - cron: name="mariadb-backup-{{db_name}}" minute="0" hour="0" job="mysqldump {{db_name}} > /var/www/{{virtual_domain}}/{{db_name}}.sql"
   when: db_name is defined
 
-- mysql_user: name={{db_name}} password={{db_pass}} priv='{{db_name}}.*:ALL' state=present
-  when: db_name is defined
+- name: nginx {{virtual_domain}}
+  block:
+    - template: src=templates/nginx.conf.j2 dest=/etc/nginx/sites-available/{{virtual_domain}}
+      notify: restart nginx
 
-# nginx
+    - file: path=/etc/nginx/sites-enabled/{{virtual_domain}} src=/etc/nginx/sites-available/{{virtual_domain}} state=link
+      notify: restart nginx
 
-- template: src=templates/nginx.conf.j2 dest=/etc/nginx/sites-available/{{virtual_domain}}
-  notify: restart nginx
+    - file: path=/var/www/{{virtual_domain}}/html owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
+      when: redirect_domain is undefined or not redirect_domain
+    - shell: rm -rf /var/www/{{virtual_domain}}_forwarded_to_* warn=false
+      when: redirect_domain is undefined or not redirect_domain
 
-- file: path=/etc/nginx/sites-enabled/{{virtual_domain}} src=/etc/nginx/sites-available/{{virtual_domain}} state=link
-  notify: restart nginx
+    - file: path=/var/www/{{virtual_domain}} state=absent
+      when: redirect_domain is defined and redirect_domain
+    - copy: dest=/var/www/{{virtual_domain}}_forwarded_to_{{redirect_domain}} content="-"
+      when: redirect_domain is defined and redirect_domain
 
-- file: path=/var/www/{{virtual_domain}}/html owner=www-data group=www-data mode=u=rwX,g=rX,o=rX recurse=yes
-  when: redirect_domain is undefined or not redirect_domain
-- shell: rm -rf /var/www/{{virtual_domain}}_forwarded_to_* warn=false
-  when: redirect_domain is undefined or not redirect_domain
+- name: postifix mailing
+  block:
+    ## alias domains
 
-- file: path=/var/www/{{virtual_domain}} state=absent
-  when: redirect_domain is defined and redirect_domain
-- copy: dest=/var/www/{{virtual_domain}}_forwarded_to_{{redirect_domain}} content="-"
-  when: redirect_domain is defined and redirect_domain
+    - lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="{{virtual_domain}} enabled" state="{{'present' if not mailbox else 'absent'}}"
+      notify: restart postfix
+    - lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="@{{virtual_domain}} {{mail_forward}}" state="{{'present' if not mailbox else 'absent'}}"
+      when: mail_forward is defined
+      notify: restart postfix
+    - lineinfile: path=/etc/postfix/virtual_mailbox_domains create=yes line="{{virtual_domain}} enabled" state="{{'present' if mailbox else 'absent'}}"
+      notify: restart postfix
 
-# postifix mailing
+    ## mailbox domains
 
-## alias domains
+    - file: path=/var/vmail/auth.d/{{virtual_domain}} owner=doveauth group=doveauth mode=u=rX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
+      when: mailbox is defined
+    - file: path=/var/vmail/auth.d/{{virtual_domain}}/passwd state=touch owner=doveauth group=doveauth mode=u=rX,g=,o=
+      when: mailbox is defined and mailbox
+    - file: path=/var/vmail/mails/{{virtual_domain}} owner=vmail group=vmail mode=u=rwX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
+      when: mailbox is defined
 
-- lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="{{virtual_domain}} enabled" state="{{'present' if not mailbox else 'absent'}}"
-  notify: restart postfix
-- lineinfile: path=/etc/postfix/virtual_alias_maps create=yes line="@{{virtual_domain}} {{mail_forward}}" state="{{'present' if not mailbox else 'absent'}}"
-  when: mail_forward is defined
-  notify: restart postfix
-- lineinfile: path=/etc/postfix/virtual_mailbox_domains create=yes line="{{virtual_domain}} enabled" state="{{'present' if mailbox else 'absent'}}"
-  notify: restart postfix
+    ### autoconfig
 
-## mailbox domains
-
-- file: path=/var/vmail/auth.d/{{virtual_domain}} owner=doveauth group=doveauth mode=u=rX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
-  when: mailbox is defined
-- file: path=/var/vmail/auth.d/{{virtual_domain}}/passwd state=touch owner=doveauth group=doveauth mode=u=rX,g=,o=
-  when: mailbox is defined and mailbox
-- file: path=/var/vmail/mails/{{virtual_domain}} owner=vmail group=vmail mode=u=rwX,g=,o= state="{{'directory' if mailbox else 'absent'}}"
-  when: mailbox is defined
-
-### autoconfig
-
-- file: path=//var/www/{{virtual_domain}}/html/.well-known/autoconfig/mail state=directory recurse=yes
-  when: mailbox is defined and mailbox
-- template: src=templates/mail.autoconfig.xml.j2 dest=/var/www/{{virtual_domain}}/html/.well-known/autoconfig/mail/config-v1.1.xml
-  when: mailbox is defined and mailbox
+    - file: path=//var/www/{{virtual_domain}}/html/.well-known/autoconfig/mail state=directory recurse=yes
+      when: mailbox is defined and mailbox
+    - template: src=templates/mail.autoconfig.xml.j2 dest=/var/www/{{virtual_domain}}/html/.well-known/autoconfig/mail/config-v1.1.xml
+      when: mailbox is defined and mailbox

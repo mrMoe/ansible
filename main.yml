@@ -1,15 +1,12 @@
 ---
-- import_playbook: host-reichstein.yml
-- import_playbook: host-denk.yml
-
-# - hosts: example.com
-#   handlers:
-#   - import_tasks: handlers/handlers.yml
-#   tasks:
-#   - { import_tasks: tasks/virtual-domain.yml, vars: [ virtual_domain: example.com,  db_name: example_com,  db_pass: ExamPlEDbPass1337!, mailbox: false, mail_forward: example.com+forward@gmail.com ]}
-#   - { import_tasks: tasks/virtual-domain.yml, vars: [ virtual_domain: example2.com, db_name: example2_com, db_pass: 1337ExamPlEDbPass!, mailbox: true ]}
-#   - copy: 
-#       dest: /var/vmail/auth.d/example2.com/passwd
-#       content: |
-#         info@example2.com:{SSHA256}foobar::::::userdb_quota_rule=*:storage=1G userdb_acl_groups=PublicMailboxAdmins
-#     tags: mail
+- hosts: example.com
+  handlers:
+  - import_tasks: handlers/handlers.yml
+  tasks:
+  - { import_tasks: tasks/virtual-domain.yml, vars: [ virtual_domain: example.com,  db_name: example_com,  db_pass: ExamPlEDbPass1337!, mailbox: false, mail_forward: example.com+forward@gmail.com ]}
+  - { import_tasks: tasks/virtual-domain.yml, vars: [ virtual_domain: example2.com, db_name: example2_com, db_pass: 1337ExamPlEDbPass!, mailbox: true ]}
+  - copy:
+      dest: /var/vmail/auth.d/example2.com/passwd
+      content: |
+        info@example2.com:{SSHA256}foobar::::::userdb_quota_rule=*:storage=1G userdb_acl_groups=PublicMailboxAdmins
+    tags: mail

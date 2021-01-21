@@ -1,0 +1,72 @@
+---
+- block:
+    - file: path={{setup_dir}}/unifi-controller/ state=directory
+
+    - copy:
+        # https://robpickering.com/working-around-incomplete-ubiquiti-unifi-security-gateway-dns-service/
+        # https://help.ui.com/hc/en-us/articles/215458888-UniFi-How-to-further-customize-USG-configuration-with-config-gateway-json
+        # https://help.ui.com/hc/en-us/articles/205146040-UniFi-config-properties-File-Explanation
+        # https://community.ui.com/questions/USG-firewall-rules-IOT-mDNS/7a813394-f70b-4a9a-98d1-d932f5f04ee6
+        # ssh ubnt mca-ctrl -t dump-cfg > usg-dump-cfg2.json
+        # cat /etc/dnsmasq.conf
+        dest: "{{setup_dir}}/unifi-controller/data/sites/default/config.gateway.json"
+        content: |
+            {
+                "service": {
+                    "dns": {
+                        "forwarding": {
+                            "options": [
+                                "all-servers",
+                                "cname=unifi.dreamworks.local,unifi",
+                                "resolv-file=/etc/resolv.conf.dhclient-new-eth0",
+                                "server=1.1.1.1",
+                                "host-record=raspberrypi.dreamworks.local,192.168.26.2"
+                            ]
+                        }
+                    }
+                }
+            }
+
+    # todo: usg provisioning per api request
+
+    - docker_container:
+        name: unifi-controller
+        image: jacobalberty/unifi
+        # recreate: true
+        pull: yes
+        # restart: yes
+        state: started
+        container_default_behavior: compatibility
+        restart_policy: always
+        log_driver: journald
+        volumes:
+            - "{{setup_dir}}/unifi-controller:/unifi"
+        published_ports:
+            - 3478:3478/udp   # Port used for STUN.
+            - 8080:8080       # Port used for device and controller communication.
+            - 8443:8443       # Port used for controller GUI/API as seen in a web browser
+            - 10001:10001/udp # Port used for device discovery
+            - 1900:1900/udp   # Port used for "Make controller discoverable on L2 network" in controller settings.
+            - 8843:8843       # Port used for HTTPS portal redirection.
+            - 8880:8880       # Port used for HTTP portal redirection.
+            - 6789:6789       # Port used for UniFi mobile speed test.
+
+  tags: unifi-controller
+
+  ## mDNS
+  ### Site
+  # Disable Automatically Optimize Network and WiFi performance
+  ### WLAN
+  # Enable multicast enhancement (IGMPv3)
+  # Disable Block LAN to WLAN Multicast and Broadcast Data
+  ### LAN
+  # Enable IGMP snooping
+  ### Service
+  # Enable Multicast DNS
+
+  # https://help.ui.com/hc/en-us/articles/360001004034-UniFi-Best-Practices-for-Managing-Chromecast-Google-Home-on-UniFi-Network
+  # sudo tcpdump -npi br0 port 5353
+  # ra0
+  # rai0
+
+  # https://www.youtube.com/watch?v=p3SfeQTaaxw&feature=youtu.be

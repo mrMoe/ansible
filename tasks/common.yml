@@ -1,37 +1,33 @@
 ---
+#- ansible.builtin.debug: var=ansible_facts
 - hostname: name={{ inventory_hostname_short }}
 - copy: dest=/etc/hostname content="{{ inventory_hostname_short }}"
+- timezone: hwclock=UTC name=UTC
 
-- authorized_key: user=root state=present key="{{ lookup('file', '/home/moe/.ssh/ed25519.pub') }}"
+- authorized_key: user=root state=present key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPMakRtYNU2Dr/7EvrNPb6oUMPJob7VonBomBKejqBu4 moe@rtfm"
 - lineinfile: path=/etc/hosts create=yes line="127.0.1.1 {{ inventory_hostname }} {{ inventory_hostname_short }}"
 
+- locale_gen: name=en_US.UTF-8 state=present
+
 - file: path=/var/log/journal/ owner=root group=root mode=u=rX,g=,o= state="directory"
+  when: arch == "amd64"
 - apt: state=absent name=rsyslog
 
 - apt: upgrade=dist update_cache=yes autoclean=yes autoremove=yes
-- apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban,acl
+- apt: state=latest name=chrony,tmux,unattended-upgrades,fail2ban,python3-systemd,acl,zstd,vim,htop,mtr,lsof,speedtest-cli,unzip,python3-pip
 
 - template: src=templates/sshd_config.j2 dest=/etc/ssh/sshd_config
   notify: restart ssh
 - group: name=sftponly
 
-- name: block ssh script kiddies
-  blockinfile:
-    path: /etc/hosts.deny
-    block: |
-      ALL: 103.27.237.67
-      ALL: 111.47.17.224
-      ALL: 121.183.203.60
-      ALL: 134.175.49.215
-      ALL: 137.74.176.208
-      ALL: 144.217.241.40
-      ALL: 190.0.22.66
-      ALL: 200.32.12.83
-      ALL: 201.244.94.189
-      ALL: 206.189.65.11
-      ALL: 222.174.55.2
-      ALL: 36.67.120.234
-      ALL: 58.242.0.0/15
-      ALL: 54.38.0.0/16
-      ALL: 59.44.0.0/14
-      ALL: 98.234.14.119
+- copy:
+    dest: /etc/fail2ban/jail.d/sshd.local
+    content: |
+      [sshd]
+      enabled   = true
+      filter    = sshd
+      banaction = route
+      backend   = systemd
+      findtime  = 86400
+      bantime   = 1209600
+  notify: restart fail2ban
