@@ -1,0 +1,17 @@
+---
+- block: # blackbox_exporter
+    - template: src=templates/blackbox_exporter.yml dest={{setup_dir}}/blackbox_exporter/blackbox.yml
+
+    - docker_container:
+        name: blackbox-exporter
+        image: prom/blackbox-exporter
+        state: started
+        container_default_behavior: compatibility
+        restart_policy: always
+        log_driver: journald
+        volumes:
+          - "{{setup_dir}}/blackbox_exporter:/config"
+        published_ports:
+          - 9115:9115
+
+  tags: blackbox_exporter

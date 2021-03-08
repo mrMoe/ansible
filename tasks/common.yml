@@ -4,7 +4,7 @@
 - copy: dest=/etc/hostname content="{{ inventory_hostname_short }}"
 - timezone: hwclock=UTC name=UTC
 
-- authorized_key: user=root state=present key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPMakRtYNU2Dr/7EvrNPb6oUMPJob7VonBomBKejqBu4 moe@rtfm"
+- authorized_key: user=root state=present key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPMakRtYNU2Dr/7EvrNPb6oUMPJob7VonBomBKejqBu4"
 - lineinfile: path=/etc/hosts create=yes line="127.0.1.1 {{ inventory_hostname }} {{ inventory_hostname_short }}"
 
 - locale_gen: name=en_US.UTF-8 state=present

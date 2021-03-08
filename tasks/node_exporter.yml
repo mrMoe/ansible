@@ -1,0 +1,32 @@
+---
+- block:
+    - user: name=node_exporter state=present shell=/bin/false create_home=false
+
+    - get_url: dest={{setup_dir}} url="https://github.com/prometheus/node_exporter/releases/download/v{{version}}/node_exporter-{{version}}.linux-{{arch}}.tar.gz"
+      register: url_node_exporter
+    - command: tar -xf "{{url_node_exporter.dest}}" --one-top-level={{setup_dir}}/node_exporter --strip-components=1 warn=false
+      when: url_node_exporter.changed
+      register: node_exporter
+
+    - copy:
+        dest: /etc/systemd/system/node_exporter.service
+        content: |
+            [Unit]
+            After=network-online.target
+            StartLimitBurst=5
+            [Service]
+            ExecStart={{setup_dir}}/node_exporter/node_exporter --collector.systemd
+            User=node_exporter
+            Group=node_exporter
+            [Install]
+            WantedBy=multi-user.target
+      register: node_exporter_service
+
+    - command: systemctl daemon-reload
+      when: node_exporter_service.changed
+    - service: name=node_exporter enabled=yes state=restarted
+      when: node_exporter.changed or node_exporter_service.changed
+
+  tags: node_exporter
+  vars:
+    version: 1.0.1

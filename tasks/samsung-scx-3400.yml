@@ -1,0 +1,16 @@
+---
+# Samsung Electronics Co., Ltd. SCX-3400 Series Z72EB8KCAE00JCM # lpstat -t, lpinfo -v
+- apt: state=latest name=cups,printer-driver-splix,avahi-daemon,sane-utils
+  notify: ['restart cups', 'restart avahi-daemon']
+
+- command: lpadmin -p scx3405 -E -v "usb://Samsung/SCX-3400%20Series?serial=Z72EB8KCAE00JCM&interface=1" -m "drv:///splix-samsung.drv/scx3200.ppd" -o "media=A4"
+  notify: restart cups
+- command: cupsctl --remote-any --share-printers
+  notify: restart cups
+
+# https://feeding.cloud.geek.nz/posts/setting-up-a-network-scanner-using-sane/
+# sane-find-scanner
+# scanimage -L
+- user: name=saned group=saned groups=lp append=true
+- lineinfile: path=/etc/sane.d/saned.conf line="192.168.0.0/16"
+  notify: restart saned.socket

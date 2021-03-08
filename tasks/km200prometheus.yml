@@ -1,0 +1,28 @@
+---
+- block: # km200prometheus
+    - git: repo=https://github.com/mrMoe/km200prometheus.git dest={{setup_dir}}/km200prometheus
+      register: km200prometheus_git
+    - command: python3 -m pip install -r {{setup_dir}}/km200prometheus/requirements.txt
+      register: km200prometheus
+
+    - copy:
+        dest: /etc/systemd/system/km200prometheus.service
+        content: |
+          [Unit]
+          After=network-online.target
+          [Service]
+          ExecStart=/usr/bin/python3 -u {{setup_dir}}/km200prometheus/crawler.py --km200_gateway_password={{gateway_password}} --km200_private_password={{password}} --km200_host={{host}} --web_listen_address {{listen_address}}
+          Restart=always
+          RestartSec=30
+          User=prometheus
+          Group=prometheus
+          [Install]
+          WantedBy=multi-user.target
+      register: km200prometheus_service
+
+    - command: systemctl daemon-reload
+      when: km200prometheus_service.changed
+    - service: name=km200prometheus enabled=yes state=restarted
+      when: km200prometheus_git.changed or km200prometheus_service.changed
+
+  tags: km200prometheus

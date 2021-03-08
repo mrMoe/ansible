@@ -1,0 +1,62 @@
+---
+- block:
+  - file: path={{ setup_dir }}/nextcloud state=directory
+
+  - community.general.postgresql_db: { name: nextcloud, login_host: localhost, login_password: "{{ postgres.env.POSTGRES_PASSWORD }}"}
+  - community.general.postgresql_ext: { db: nextcloud, name: timescaledb, state: absent, login_host: localhost, login_password: "{{ postgres.env.POSTGRES_PASSWORD }}"}
+  - community.general.postgresql_user: { db: nextcloud, name: nextcloud, password: "{{ nextcloud.db_password }}", expires: infinity,  priv: "ALL", login_host: localhost, login_password: "{{ postgres.env.POSTGRES_PASSWORD }}"}
+
+  - community.general.docker_container:
+      name: nextcloud
+      image: nextcloud
+      container_default_behavior: compatibility
+
+      pull: yes
+
+      state: started
+      restart_policy: always
+      log_driver: journald
+
+      network_mode: bridge
+      networks_cli_compatible: yes
+      networks:
+        - name: postgres_net
+          aliases: nextcloud
+
+      env:
+        # https://docs.nextcloud.com/server/15/admin_manual/configuration_server/occ_command.html#command-line-installation-label
+        POSTGRES_DB: nextcloud
+        POSTGRES_USER: nextcloud
+        POSTGRES_PASSWORD: "{{ nextcloud.db_password }}"
+        POSTGRES_HOST: postgres
+
+        NEXTCLOUD_ADMIN_USER: "{{ nextcloud.admin_user.name }}"
+        NEXTCLOUD_ADMIN_PASSWORD: "{{ nextcloud.admin_user.password }}"
+
+        NEXTCLOUD_TRUSTED_DOMAINS: "{{ inventory_hostname_short }}"
+
+      published_ports:
+        - 8081:80
+      volumes:
+        - "{{ setup_dir }}/nextcloud/:/var/www/html"
+
+  - name: Pause play until nextcloud is reachable from this host
+    ansible.builtin.uri: { url: "http://localhost:8081" }
+    register: _result
+    until: _result.status == 200
+    retries: 720 # 720 * 5 seconds = 1hour (60*60/5)
+    delay: 5 # Every 5 seconds
+
+  # https://ownyourbits.com/2019/06/29/understanding-and-improving-nextcloud-previews/
+  - command: >
+      docker exec --user www-data nextcloud bash -c 'php occ db:add-missing-indices;
+        php occ config:system:set preview_max_x --value 2048;
+        php occ config:system:set preview_max_y --value 2048;
+        php occ config:system:set jpeg_quality --value 60;
+        php occ config:app:set preview jpeg_quality --value="60";
+        php occ config:app:set previewgenerator squareSizes --value="32 256";
+        php occ config:app:set previewgenerator widthSizes  --value="256 384";
+        php occ config:app:set previewgenerator heightSizes --value="256";
+        php occ app:enable previewgenerator;
+      '
+  tags: nextcloud

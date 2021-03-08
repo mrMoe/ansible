@@ -1,0 +1,13 @@
+---
+- block:
+    - docker_container:
+        name: mqtt
+        image: eclipse-mosquitto
+        state: started
+        container_default_behavior: compatibility
+        restart_policy: always
+        log_driver: journald
+        published_ports:
+            1883:1883
+
+  tags: mqtt

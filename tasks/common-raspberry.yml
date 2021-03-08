@@ -1,0 +1,11 @@
+---
+- apt: state=absent name=timidity,lxmusic,gnome-disk-utility,deluge-gtk,evince,wicd,wicd-gtk,clipit,usermode,gucharmap,gnome-system-tools,pavucontrol
+
+- import_tasks: tasks/common.yml
+
+- file: path=/var/log/journal/ state=absent # reduce writes to sd-card
+- user: name=pi state=absent
+
+- lineinfile: path=/boot/config.txt line="dtoverlay=disable-bt"
+- service: name=bluetooth enabled=no state=stopped
+- service: name=hciuart enabled=no state=stopped

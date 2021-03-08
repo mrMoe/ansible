@@ -1,0 +1,61 @@
+---
+- block:
+    - apt_key: state=present url="https://download.docker.com/linux/ubuntu/gpg"
+    - apt_repository: state=present update_cache=yes repo="deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+    # - apt: state=latest allow_unauthenticated=yes name=python-docker,apt-transport-https,ca-certificates,curl,gnupg-agent,software-properties-common
+    - apt: state=latest allow_unauthenticated=yes name=python3-pip,docker-ce,docker-ce-cli
+    - service: name=docker enabled=yes state=started
+    - pip: name=docker
+
+    - file: path=/opt/theforest/config state=directory
+    - file: path=/opt/theforest/logs state=directory
+    - copy:
+        dest: /opt/theforest/config/config.cfg
+        content: |
+          serverIP 172.17.0.2
+          serverSteamPort 8766
+          serverGamePort 27015
+          serverQueryPort 27016
+          serverName forest
+          serverPlayers 10
+          enableVAC off
+          serverPassword pass
+          serverPasswordAdmin passadmin
+          #serverSteamAccount forest
+          serverAutoSaveInterval 30
+          difficulty Normal
+          initType Continue
+          slot 1
+          showLogs on
+          veganMode off
+          vegetarianMode off
+          resetHolesMode off
+          treeRegrowMode on
+          allowBuildingDestruction on
+          allowEnemiesCreativeMode off
+          allowCheats on
+          realisticPlayerDamage off
+          saveFolderPath /theforest/saves/
+          targetFpsIdle 5
+          targetFpsActive 60
+
+    - docker_container:
+        name: the-forest-dedicated-server
+        image: papamoose/the-forest-dedicated-server:latest
+        state: started
+        container_default_behavior: compatibility
+        restart_policy: always
+        recreate: true
+        log_driver: journald
+        published_ports:
+          - "8766:8766/tcp"
+          - "8766:8766/udp"
+          - "27015:27015/tcp"
+          - "27015:27015/udp"
+          - "27016:27016/tcp"
+          - "27016:27016/udp"
+        volumes:
+          - "/opt/theforest:/theforest"
+          - "/opt/theforest/logs:/opt/games/theforest/logs"
+
+  tags: forest

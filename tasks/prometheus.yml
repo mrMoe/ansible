@@ -1,0 +1,29 @@
+---
+- block: # prometheus
+    - get_url: dest={{setup_dir}}/ url=https://github.com/prometheus/prometheus/releases/download/v{{version}}/prometheus-{{version}}.linux-{{arch}}.tar.gz
+      register: url_prometheus
+    - command: tar -xf "{{url_prometheus.dest}}" --one-top-level={{setup_dir}}/prometheus --strip-components=1 warn=false
+      when: url_prometheus.changed
+
+    - template: src=templates/prometheus.yml dest={{setup_dir}}/prometheus/prometheus.yml owner=root
+
+    - file: path={{setup_dir}}/prometheus/data state=directory owner=prometheus group=prometheus recurse=yes
+
+    - copy:
+        dest: /etc/systemd/system/prometheus.service
+        content: |
+            [Unit]
+            After=network-online.target
+            [Service]
+            WorkingDirectory={{setup_dir}}/prometheus
+            ExecStart={{setup_dir}}/prometheus/prometheus
+            User=prometheus
+            Group=prometheus
+            Restart=always
+            RestartSec=60
+            [Install]
+            WantedBy=multi-user.target
+
+  tags: prometheus
+  vars:
+    version: 2.19.3

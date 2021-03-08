@@ -1,0 +1,37 @@
+---
+- block: # timescaledb
+  - file: path={{ setup_dir }}/postgresql/data state=directory
+
+  - community.general.docker_network: { name: postgres_net }
+
+  - docker_container:
+      name: timescaledb
+      image: timescale/timescaledb:latest-pg12
+      command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off -c random_page_cost=1.0
+      container_default_behavior: compatibility
+
+      pull: yes
+
+      state: started
+      restart_policy: always
+      log_driver: journald
+
+      network_mode: bridge
+      networks_cli_compatible: yes
+      networks:
+        - name: postgres_net
+          aliases: postgres
+
+      env: "{{ postgres.env | default(omit) }}"
+      published_ports:
+        - 127.0.0.1:5432:5432
+      volumes:
+        - "{{ setup_dir }}/timescaledb/data:/var/lib/postgresql/data"
+        - "/etc/timezone:/etc/timezone:ro"
+        - "/etc/localtime:/etc/localtime:ro"
+
+  - community.general.postgresql_db: { name: prometheus, login_host: localhost, login_password: "{{ postgres.env.POSTGRES_PASSWORD }}"}
+  - community.general.postgresql_ext: { db: prometheus, name: timescaledb, login_host: localhost, login_password: "{{ postgres.env.POSTGRES_PASSWORD }}"}
+  - community.general.postgresql_user: { db: prometheus, name: prometheus, password: "{{ prometheus.db_password }}", expires: infinity,  priv: "ALL", login_host: localhost, login_password: "{{ postgres.env.POSTGRES_PASSWORD }}"}
+
+  tags: timescaledb

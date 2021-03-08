@@ -1,0 +1,29 @@
+---
+- block: # perforce
+    - user: name=perforce state=present shell=/bin/false create_home=false
+    - file: path=/opt/perforce state=directory owner=perforce group=perforce
+    - get_url: dest=/opt/perforce/ url=https://www.perforce.com/downloads/perforce/r20.1/bin.linux26x86_64/p4d mode=0755
+      register: url_perforce
+
+    - copy:
+        dest: /etc/systemd/system/perforce.service
+        content: |
+          [Unit]
+          After=network-online.target
+          [Service]
+          WorkingDirectory=/opt/perforce
+          ExecStart=/opt/perforce/p4d
+          Restart=always
+          RestartSec=30
+          User=perforce
+          Group=perforce
+          [Install]
+          WantedBy=multi-user.target
+      register: perforce_service
+
+    - command: systemctl daemon-reload
+      when: perforce_service.changed
+    - service: name=perforce enabled=yes state=restarted
+      when: url_perforce.changed
+
+  tags: perforce
